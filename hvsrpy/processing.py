@@ -165,6 +165,19 @@ def check_nyquist_frequency(dt, fcs):
         msg += f"exceeds the records Nyquist frequency of {fnyq:.2f} Hz"
         raise ValueError(msg)
 
+def check_ellipse_frequency(dt, fcs):
+    # check if frequency allows for enough points for fitting ellipse
+    # if not, raises error
+
+    # an ellipse is uniquely defined by 5 points, but we can set the 
+    # condition so that we need at least 6 points
+    # which is equivalent to one third of the Nyquist frequency
+    fell = 1/(6*dt)
+    if max(fcs) > fell:
+        msg = f"The maximum center frequency of {np.max(fcs):.2f} Hz "
+        msg += f"exceeds the maximum allowed frequency of {fell:.2f} Hz"
+        raise ValueError(msg)
+
 
 def traditional_hvsr_processing(records, settings):
     prepare_fft_settings(records, settings)
@@ -406,6 +419,29 @@ def azimuthal_hvsr_processing(records, settings):
         hvsr_per_azimuth.append(hvsr)
     return HvsrAzimuthal(hvsr_per_azimuth, settings.azimuths_in_degrees, meta={**records[0].meta, **settings.attr_dict})
 
+def delfi_processing(records, settings):
+    """Compute Rayleig wave ellipticity based on the Direct ELlipse 
+    FItting (DELFI) method
+    """
+
+    records, dt_with_count = prepare_records_with_inconsistent_dt(
+        records, settings)
+    
+    # allocate array for delfi results
+    fcs = np.array(settings.smoothing["center_frequencies_in_hz"])
+    delfi_spectra = np.empty((len(records), len(fcs)))
+    check_nyquist_frequency(max(dt_with_count.keys()), fcs)
+    check_ellipse_frequency(max(dt_with_count.keys()), fcs)
+    
+    # process in groups of constant dt for efficiency
+    delfi_idx = 0
+    cur_idx = 0
+    delfi_indices_to_order = np.empty(len(records), dtype=int)
+    for dt, count in dt_with_count.items():
+
+        pass
+
+    pass
 
 def _rpds_single_component(timeseries, settings):
     """Compute power spectral density of real-valued, time-domain data.
