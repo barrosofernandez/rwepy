@@ -97,6 +97,19 @@ class TestTimeSeries(TestCase):
 
         filt_tseries.butterworth_filter(fcs_in_hz=(3, None))
         self.assertTrue(unfilt_tseries.is_similar(filt_tseries))
+    
+    def test_timeseries_filter_cheby(self):
+        unfilt_tseries = hvsrpy.TimeSeries.from_timeseries(self.ex_tseries_sine)
+        filt_tseries = hvsrpy.TimeSeries.from_timeseries(self.ex_tseries_sine)
+
+        filt_tseries.chebyshev_filter(fcs_in_hz=(3, 5))
+        self.assertTrue(unfilt_tseries.is_similar(filt_tseries))
+
+        filt_tseries.chebyshev_filter(fcs_in_hz=(None, 5))
+        self.assertTrue(unfilt_tseries.is_similar(filt_tseries))
+
+        filt_tseries.chebyshev_filter(fcs_in_hz=(3, None))
+        self.assertTrue(unfilt_tseries.is_similar(filt_tseries))        
 
     def test_timeseries_is_similar_and_equal(self):
         # baseline
