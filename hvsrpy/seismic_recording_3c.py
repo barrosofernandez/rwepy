@@ -205,6 +205,33 @@ class SeismicRecording3C():
         for component in ["ns", "ew", "vt"]:
             getattr(self, component).butterworth_filter(fcs_in_hz=fcs_in_hz,
                                                         order=order)
+    
+    def chebyshev_filter(self, fcs_in_hz, ripple=5, order=4):
+        """Chebyshev filter component ``TimeSeries``.
+        
+        Parameters
+        ----------
+        fcs_in_hz : tuple
+            Chebyshev filter's corner frequencies in Hz. ``None`` can
+            be used to specify a one-sided filter. For example a high
+            pass filter at 3 Hz would be specified as
+            ``fcs_in_hz=(3, None)``.
+        ripple : int or float
+            Maximum ripple allowed for Chebyshev filter, in decibels. Defaults to ``5``
+        order : int, optional
+            Butterworth filter order, default is ``5``.
+
+        Returns
+        -------
+        None
+            Filters ``amplitude`` attribute in-place.
+
+        """
+        self.meta["chebyshev_filter"] = fcs_in_hz
+        for component in ["ns","ew","vt"]:
+            getattr(self, component).chebyshev_filter(fcs_in_hz=fcs_in_hz,
+                                                      order=order,
+                                                      ripple=ripple)
 
     def orient_sensor_to(self, degrees_from_north):
         """Orient sensor's horizontal components.

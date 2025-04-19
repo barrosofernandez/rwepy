@@ -289,7 +289,7 @@ class TimeSeries():
             warnings.warn(msg)
             return None
         
-        sos = cheby1(4, ripple, wn, btype, fs=self.fs, output='sos')
+        sos = cheby1(order, ripple, wn, btype, fs=self.fs, output='sos')
         self.amplitude = sosfiltfilt(sos, self.amplitude)
 
 
