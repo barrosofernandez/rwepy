@@ -22,7 +22,7 @@ import logging
 
 import numpy as np
 from scipy.signal.windows import tukey
-from scipy.signal import butter, sosfiltfilt, detrend
+from scipy.signal import butter, cheby1, sosfiltfilt, detrend
 
 logger = logging.getLogger(__name__)
 
@@ -252,6 +252,46 @@ class TimeSeries():
 
         sos = butter(order, wn, btype, fs=self.fs, output='sos')
         self.amplitude = sosfiltfilt(sos, self.amplitude)
+
+    def chebyshev_filter(self, fcs_in_hz, ripple=5, order=4):
+        """Apply Chebyshev type-1 filter.
+        
+        Parameters
+        ----------
+        fcs_in_hz : tuple
+            Chebyshev filter's corner frequencies in Hz. ``None`` can
+            be used to specify a one-sided filter. For example a high
+            pass filter at 3 Hz would be specified as
+            ``fcs_in_hz=(3, None)``.
+        ripple : int or float
+            Maximum ripple allowed for Chebyshev filter, in decibels. Defaults to ``5``
+        order : int, optional
+            Butterworth filter order, default is ``5``.
+
+        Returns
+        -------
+        None
+            Filters ``amplitude`` attribute in-place.
+
+        """
+        fc_low, fc_high = fcs_in_hz
+        if fc_low is None and fc_high is not None:
+            btype = "lowpass"
+            wn = fc_high
+        elif fc_low is not None and fc_high is None:
+            btype = "highpass"
+            wn = fc_low
+        elif fc_low is not None and fc_high is not None:
+            btype = "bandpass"
+            wn = [fc_low,fc_high]
+        else:
+            msg = "No corner frequencies provided; no filtering performed."
+            warnings.warn(msg)
+            return None
+        
+        sos = cheby1(4, ripple, wn, btype, fs=self.fs, output='sos')
+        self.amplitude = sosfiltfilt(sos, self.amplitude)
+
 
     @classmethod
     def from_trace(cls, trace):
